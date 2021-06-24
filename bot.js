@@ -16,9 +16,9 @@ for (const file of commandList) {
 
 const prefix = process.env.prefix;
 
-var stats = {};
-if (fs.existsSync('stats.json')) {
-	stats = jsonfile.readFileSync('stats.json');
+var profiles = {};
+if (fs.existsSync('profiles.json')) {
+	profiles = jsonfile.readFileSync('profiles.json');
 }
 
 client.once('ready', () => {
@@ -31,15 +31,16 @@ client.on('message', message => {
 	if (message.content.startsWith(prefix)) return;
 
 	// create entry in the json file if you don't have an entry for this user.
-	if (message.author.id in stats === false) {
-		stats[message.author.id] = {
+	if (message.author.id in profiles === false) {
+		profiles[message.author.id] = {
 			xp: 0,
 			level: 0,
-			last_message: 0,
+			description: 'a person on the internet',
+			embed_color: '#32c32c',
 		};
 	}
 
-	const userStats = stats[message.author.id];
+	const userStats = profiles[message.author.id];
 	userStats.xp += random.int(15, 25);
 
 	const xpToNxtLevel = 5 * Math.pow(userStats.level, 2) + 50 * userStats.level + 100;
@@ -55,7 +56,7 @@ client.on('message', message => {
 	console.log(message.author.username + ' : ' + userStats.xp + ' / ' + xpToNxtLevel);
 
 	// save to a file for various reasons lol
-	jsonfile.writeFileSync('stats.json', stats);
+	jsonfile.writeFileSync('profiles.json', profiles);
 
 });
 
