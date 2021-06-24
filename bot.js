@@ -1,5 +1,7 @@
 // main imports
 const fs = require('fs');
+const jsonfile = require('jsonfile');
+const random = require('random');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -14,10 +16,50 @@ for (const file of commandList) {
 
 const prefix = process.env.prefix;
 
+var stats = {};
+if (fs.existsSync('stats.json')) {
+	stats = jsonfile.readFileSync('stats.json');
+}
+
 client.once('ready', () => {
 	console.log('Ready!');
 });
 
+// leveling system
+client.on('message', message => {
+	if (message.author.bot) return;
+	if (message.content.startsWith(prefix)) return;
+
+	// create entry in the json file if you don't have an entry for this user.
+	if (message.author.id in stats === false) {
+		stats[message.author.id] = {
+			xp: 0,
+			level: 0,
+			last_message: 0,
+		};
+	}
+
+	const userStats = stats[message.author.id];
+	userStats.xp += random.int(15, 25);
+
+	const xpToNxtLevel = 5 * Math.pow(userStats.level, 2) + 50 * userStats.level + 100;
+
+	// level up if xp meets next level requirements
+	if (userStats.xp >= xpToNxtLevel) {
+		userStats.level += 1;
+		userStats.xp -= xpToNxtLevel;
+		message.channel.send(message.author.username + ' has reached level ' + userStats.level + '!');
+	}
+
+	// log xp to console for debug purposes.
+	console.log(message.author.username + ' : ' + userStats.xp + ' / ' + xpToNxtLevel);
+
+	// save to a file for various reasons lol
+	jsonfile.writeFileSync('stats.json', stats);
+
+});
+
+// command handling
 client.on('message', message => {
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
