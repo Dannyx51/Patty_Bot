@@ -36,6 +36,14 @@ module.exports = {
 				args.shift();
 				stats[user.id].description = args.join(' ');
 			}
+			if (args[0].toLowerCase() === 'color' || args[0].toLowerCase() === 'colour') {
+				args.shift();
+				if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(args[0])) {
+					stats[user.id].embed_color = args[0];
+				} else {
+					return message.reply('Please provide a valid hex color, thank you!');
+				}
+			}
 		}
 
 		// pull user data from profiles.json
